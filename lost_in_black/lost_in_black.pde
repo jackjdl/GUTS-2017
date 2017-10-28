@@ -2,8 +2,9 @@ Player agentA;
 Entity agentB;
 Turret turret;
 Entity door;
+Alien alienA;
 PImage bg;
-PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal;
+PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown;
 
 int VP = 720;
 int HP = 1080;
@@ -47,6 +48,13 @@ void setup(){
   doorNormal = loadImage("../assets/Objects/Door-Normal.png");
   door = new Entity(doorx, doory, doorNormal);
   
+  
+  //Alien
+  int alienAx = 200;
+  int alienAy = 150;
+  alienADown = loadImage("../assets/Aliens/Alien-A.png");
+  alienA = new Alien(alienAx, alienAy, 24, 4, alienADown);
+  
   //Background
   bg = loadImage("../assets/Map/Room.png");
   background(bg);
@@ -62,14 +70,22 @@ void draw(){
   
   agentA.move();
   agentA.rotate();
-      paintScreenBlack();
+  alienA.move();
+  alienA.display();
+  
+  paintScreenBlack();
+  
+  alienA.move();
+  alienA.rotate();
 
   agentA.display();
   agentB.display();
   turret.display();
+  
 
 
   agentA.detectCollision();
+  alienA.detectCollision();
   
 
 }
@@ -241,4 +257,16 @@ class Player extends Entity {
       x = 150;
     }
   }
+}
+
+class Alien extends Player {
+  
+  Alien(int xx, int yy, int dd, int vv, PImage i) {
+    super(xx, yy, dd, vv, i);
+  }
+  
+  void rotate() {
+    facingDirection.set(agentA.x - x, agentA.y - y);
+  }
+  
 }
