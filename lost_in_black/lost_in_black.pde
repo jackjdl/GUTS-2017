@@ -1,7 +1,10 @@
 Player agentA;
 Entity agentB;
+Turret turret;
+Entity door;
 PImage bg;
-PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight;
+PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal;
+
 int VP = 720;
 int HP = 1080;
 void setup(){
@@ -25,6 +28,19 @@ void setup(){
   agentBRight = loadImage("../assets/Agent-B/Agent-B-Right.png");
   agentB = new Entity(agentBx, agentBy, agentBRight);
   
+  //Turret
+  int turretx = 90;
+  int turrety = 310;
+  turretNormal = loadImage("../assets/Objects/Turret-Normal.png");
+  turretFire = loadImage("../assets/Objects/Turret-Fire.png");
+  turret = new Turret(turretx, turrety, turretNormal);
+  
+  //Door
+  int doorx = width / 2 + 30;
+  int doory = height - 20;
+  doorNormal = loadImage("../assets/Objects/Door-Normal.png");
+  door = new Entity(doorx, doory, doorNormal);
+  
   
   /*Turret
   turret = loadImage("assets/Objects/Turret-Normal.png");
@@ -46,11 +62,17 @@ void draw(){
   
   if ((agentA.isLeft || agentA.isRight || agentA.isUp || agentA.isDown)) {
       background(bg);
+      agentB.display();
+      turret.display();
+      door.display();
   }
-  paintScreenBlack();
+  
   agentA.move();
   agentA.display();
-  agentB.display();
+  agentA.detectCollision();
+  
+  paintScreenBlack();
+
 }
 
 void keyPressed() {
@@ -59,6 +81,14 @@ void keyPressed() {
  
 void keyReleased() {
   agentA.setMove(keyCode, false);
+}
+
+void mousePressed() {
+   turret.fire();
+}
+
+void mouseReleased() {
+   turret.stop(); 
 }
 
 void paintScreenBlack() {
@@ -102,7 +132,7 @@ void paintScreenBlack() {
                  }
               }
            }
-        }
+        } 
      }
   }
 }
@@ -129,6 +159,32 @@ class Entity {
    image(img,x,y);
  }
  
+}
+
+
+class Turret extends Entity {
+  
+ float bearing;
+ PVector location;
+ boolean isFiring;
+ 
+ Turret(int xx, int yy, PImage i) {
+   super(xx, yy, i);
+   location = new PVector(x, y);
+ }
+ 
+ void turn() {
+    //TODO
+ }
+ 
+ void fire() {
+   img = turretFire;
+ }
+ 
+ void stop() {
+   img = turretNormal;
+ }
+
 }
 
 
@@ -171,6 +227,26 @@ class Player extends Entity {
  
     default:
       return b;
+    }
+  }
+  
+  void detectCollision() {
+    //Collision with door
+    
+    float doortl = door.x;
+    float doortr = doortl + door.img.width;
+    float doorbl = door.x + door.img.height;
+    float doorbr = doorbl + door.img.width;
+    
+    //Collision with walls
+    if(y > height - 80) {
+      y = height - 80;
+    }
+    if(x > width - 80) {
+      x = width - 80;
+    }
+    if(x < 150) {
+      x = 150;
     }
   }
 }
