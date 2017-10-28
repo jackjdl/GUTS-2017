@@ -20,12 +20,18 @@ void setup(){
   agentAUp = loadImage("../assets/Agent-A/Agent-A-Up.png");
   agentALeft = loadImage("../assets/Agent-A/Agent-A-Left.png");
   agentARight = loadImage("../assets/Agent-A/Agent-A-Right.png");
+  agentADown.resize(agentADown.width/2, agentADown.height/2);
+  agentAUp.resize(agentAUp.width/2, agentAUp.height/2);
+  agentALeft.resize(agentALeft.width/2, agentALeft.height/2);
+  agentARight.resize(agentARight.width/2, agentARight.height/2);
+
   agentA = new Player(agentAx, agentAy, 48, 4, agentADown); 
   
   //Agent B - Turret
   int agentBx = 60;
   int agentBy = 300;
   agentBRight = loadImage("../assets/Agent-B/Agent-B-Right.png");
+  agentBRight.resize(agentBRight.width/2, agentBRight.height/2);
   agentB = new Entity(agentBx, agentBy, agentBRight);
   
   //Turret
@@ -41,37 +47,30 @@ void setup(){
   doorNormal = loadImage("../assets/Objects/Door-Normal.png");
   door = new Entity(doorx, doory, doorNormal);
   
-  
-  /*Turret
-  turret = loadImage("assets/Objects/Turret-Normal.png");
-  turretx = 130;
-  turrety = (height - agentA.height)/2;
-  
-  //Agent B - Ground
-  agentB = loadImage("assets/Agent-B/Agent-B-Down.png");
-  agentBx = (width - agentA.width)/2;
-  agentBy = (height - agentA.height)/2;
-  */
-  
   //Background
   bg = loadImage("../assets/Map/Room.png");
+  background(bg);
 }
 
 
 void draw(){
-  
-  if ((agentA.isLeft || agentA.isRight || agentA.isUp || agentA.isDown)) {
+
+  if ((agentA.isLeft || agentA.isRight || agentA.isUp || agentA.isDown || agentA.isRotatingClockwise || agentA.isRotatingAnticlockwise)) {
       background(bg);
-      agentB.display();
-      turret.display();
       door.display();
   }
   
   agentA.move();
+  agentA.rotate();
+      paintScreenBlack();
+
   agentA.display();
+  agentB.display();
+  turret.display();
+
+
   agentA.detectCollision();
   
-  paintScreenBlack();
 
 }
 
@@ -92,37 +91,15 @@ void mouseReleased() {
 }
 
 void paintScreenBlack() {
-   
-  
-    PVector facingDirection;
-    if (agentA.isLeft) {
-        facingDirection = new PVector(-1,0);
-                      System.out.println("l");
-
-    } else if (agentA.isDown) {
-        facingDirection = new PVector(0,1);
-                              System.out.println("d");
-
-    } else if (agentA.isUp) {
-        facingDirection = new PVector(0,-1);
-                              System.out.println("u");
-
-    } else if (agentA.isRight) {
-        facingDirection = new PVector(1,0);
-                                      System.out.println("r");
-
-    } else {
-        return;
-    }
- 
+     
    for (int pixelY = 0; pixelY < VP; pixelY= pixelY + 6) {
      for (int pixelX = 0; pixelX < HP; pixelX = pixelX + 6) {
-        PVector playerToPoint = new PVector(pixelX-agentA.x, pixelY-agentA.y);
-          float angleBetween = PVector.angleBetween(facingDirection, playerToPoint);
+        PVector playerToPoint = new PVector(pixelX-(agentA.x+30), pixelY-(agentA.y+30));
+          float angleBetween = PVector.angleBetween(agentA.facingDirection, playerToPoint);
           if (angleBetween > PI) {
               angleBetween = 2*PI - angleBetween;
           }
-          if (angleBetween > PI/4) {
+          if (angleBetween > PI/8 && pixelX > 167) {
             
             color black = color(0);
             for (int surroundX = pixelX - 3; surroundX < pixelX + 3; surroundX++) {
@@ -191,15 +168,24 @@ class Turret extends Entity {
 
 class Player extends Entity {
 
-  boolean isLeft, isRight, isUp, isDown;
-  final int d, v;
+  boolean isLeft, isRight, isUp, isDown, isRotatingClockwise, isRotatingAnticlockwise;
+  final int d, v, rotationSpeed;
+  float bearing;
+  PVector facingDirection;
  
   Player(int xx, int yy, int dd, int vv, PImage i) {
     super(xx, yy, i);
     d = dd;
     v = vv;
+    rotationSpeed = 5;
+    bearing = 0;
+    facingDirection = new PVector(1,1);
   }
-
+ 
+ void rotate() {
+   float changeInBearing = rotationSpeed*(int(isRotatingClockwise) - int(isRotatingAnticlockwise));
+   facingDirection.rotate((changeInBearing/360)*2*PI);
+ }
  
   void move() {
     int r = d>>1;
@@ -209,21 +195,27 @@ class Player extends Entity {
  
   boolean setMove(int k, boolean b) {
     switch (k) {
-    case UP:
+    case 'W':
       img = agentAUp;
       return isUp = b;
  
-    case DOWN:
+    case 'S':
       img = agentADown;
       return isDown = b;
  
-    case LEFT:
+    case 'A':
       img = agentALeft;
       return isLeft = b;
  
-    case RIGHT:
+    case 'D':
       img = agentARight;
       return isRight = b;
+      
+    case LEFT :
+      return isRotatingAnticlockwise = b;
+ 
+    case RIGHT :
+      return isRotatingClockwise = b;
  
     default:
       return b;
