@@ -6,7 +6,7 @@ Alien alienA;
 PImage bg;
 PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown;
 
-int VP = 720;
+int VP = 725;
 int HP = 1080;
 void setup(){
   size(1080,720);
@@ -63,15 +63,13 @@ void setup(){
 
 void draw(){
 
-  if ((agentA.isLeft || agentA.isRight || agentA.isUp || agentA.isDown || agentA.isRotatingClockwise || agentA.isRotatingAnticlockwise)) {
-      background(bg);
-      door.display();
-  }
+  background(bg);
   
   agentA.move();
   agentA.rotate();
-  alienA.move();
+  
   alienA.display();
+  door.display();
   
   paintScreenBlack();
   
@@ -81,8 +79,6 @@ void draw(){
   agentA.display();
   agentB.display();
   turret.display();
-  
-
 
   agentA.detectCollision();
   alienA.detectCollision();
@@ -241,17 +237,16 @@ class Player extends Entity {
   void detectCollision() {
     //Collision with door
     
-    float doortl = door.x;
-    float doortr = doortl + door.img.width;
-    float doorbl = door.x + door.img.height;
-    float doorbr = doorbl + door.img.width;
+    if (y > 680 && x > 500 && x < 630) {
+        exit();
+    }
     
     //Collision with walls
-    if(y > height - 80) {
-      y = height - 80;
+    if(y > height - 40) {
+      y = height - 40;
     }
-    if(x > width - 80) {
-      x = width - 80;
+    if(x > width - 40) {
+      x = width - 40;
     }
     if(x < 150) {
       x = 150;
@@ -267,6 +262,14 @@ class Alien extends Player {
   
   void rotate() {
     facingDirection.set(agentA.x - x, agentA.y - y);
+  }
+  
+  void move() {
+    rotate();
+    PVector v = new PVector(facingDirection.x, facingDirection.y);
+    System.out.println(v.div(v.mag()));
+    x += (v.x) * 2;
+    y += (v.y) * 2;
   }
   
 }
