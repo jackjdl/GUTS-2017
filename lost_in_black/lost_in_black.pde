@@ -5,7 +5,7 @@ Entity door;
 Alien alienA;
 Light flashlight;
 PImage bg;
-PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, laserImage;
+PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, instructionsMovement, instructionsLight, laserImage;
 
 ArrayList<Laser> lasers = new ArrayList<Laser>();
 
@@ -15,16 +15,15 @@ int HP = 1080;
 boolean tutorial = true;
 boolean tutorialDone = false;
 boolean pickedUpLight = false;
+boolean movedLight = false;
 boolean killedAliens = false;
 
 void setup(){
   size(1080,720);
   smooth(4);
   frameRate(60);
-  cursor(CROSS);
+  cursor(ARROW);
   
-  laserImage = loadImage("../assets/Objects/Laser2.png");
-
   
   //Agent A - Ground
   int agentAx = 600;
@@ -82,6 +81,14 @@ void setup(){
   bulletNormal.resize(bulletNormal.width/16, bulletNormal.height/16);
   
   
+  //Instructions
+  instructionsMovement = loadImage("../assets/Map/Instructions-Movement.png");
+  instructionsLight = loadImage("../assets/Map/Instructions-Light.png");
+  
+  //Laser
+  laserImage = loadImage("../assets/Objects/Laser2.png");
+  
+  
   //Background
   bg = loadImage("../assets/Map/Room.png");
   background(bg);
@@ -131,7 +138,8 @@ void setup2() {
   //Alien
   int alienAx = 200;
   int alienAy = 150;
-  alienADown = loadImage("../assets/Aliens/Alien-A.png");
+  alienADown = loadImage("../assets/Aliens/Alien-B.png");
+  alienADown.resize(alienADown.width/2, alienADown.height/2);
   alienA = new Alien(alienAx, alienAy, 24, 4, alienADown);
   
   //Background
@@ -152,7 +160,7 @@ void draw(){
   agentA.move();
   agentA.rotate();
   
-  if (tutorialDone && !killedAliens) {
+  if (tutorialDone) {
     alienA.display();
   }
   
@@ -170,7 +178,15 @@ void draw(){
     flashlight.display();
   }
   
-  if (tutorialDone && !killedAliens) {
+  if (!pickedUpLight) {
+    image(instructionsMovement, 750, 500);
+  } else {
+    if (!movedLight) {
+      image(instructionsLight, 750, 500);
+    }
+  }
+  
+  if (tutorialDone) {
     alienA.move();
     alienA.rotate();
   }
@@ -181,7 +197,7 @@ void draw(){
 
   agentA.detectCollision();
   
-  if (tutorialDone) {
+  if (tutorialDone && !killedAliens) {
     alienA.detectCollision();
   }
   
@@ -191,6 +207,8 @@ void draw(){
     laser.display();
     laser.detectCollision();
   }
+  
+
 }
 
 void keyPressed() {
@@ -218,7 +236,7 @@ void blackWithFlashlight() {
           if (angleBetween > PI) {
               angleBetween = 2*PI - angleBetween;
           }
-          if (angleBetween > PI/8 && pixelX > 167) {
+          if (angleBetween > PI/16 && pixelX > 167) {
             
             color black = color(0);
             for (int surroundX = pixelX - 3; surroundX < pixelX + 3; surroundX++) {
@@ -243,7 +261,7 @@ void paintScreenBlack() {
           if (angleBetween > PI) {
               angleBetween = 2*PI - angleBetween;
           }
-          if (angleBetween > PI/8 && pixelX > 167) {
+          if (angleBetween > PI/16 && pixelX > 167) {
             
             color black = color(0);
             for (int surroundX = pixelX - 3; surroundX < pixelX + 3; surroundX++) {
@@ -281,6 +299,7 @@ class Entity {
  }
  
 }
+
 
 
 class Turret extends Entity {
@@ -342,7 +361,7 @@ class Player extends Entity {
     lives = 3;
     rotationSpeed = 5;
     bearing = 0;
-    facingDirection = new PVector(1,1);
+    facingDirection = new PVector(1,-3);
   }
  
  void rotate() {
@@ -354,6 +373,10 @@ class Player extends Entity {
     int r = d>>1;
     x = constrain(x + v*(int(isRight) - int(isLeft)), r, width  - r);
     y = constrain(y + v*(int(isDown)  - int(isUp)),   r, height - r);
+    if (isLeft) img = agentALeft;
+    else if (isRight) img = agentARight;
+    else if (isUp) img = agentAUp;
+    else if (isDown) img = agentADown;
   }
   
    void display() {
@@ -385,9 +408,11 @@ class Player extends Entity {
       return isRight = b;
       
     case LEFT :
+      movedLight = true;
       return isRotatingAnticlockwise = b;
  
     case RIGHT :
+      movedLight = true;
       return isRotatingClockwise = b;
  
     default:
@@ -400,6 +425,7 @@ class Player extends Entity {
     //Collision with door
     if (y > 680 && x > 500 && x < 630) {
         tutorial = false;
+        movedLight = true;
     }
     
     //Collision with flashlight
@@ -413,6 +439,8 @@ class Player extends Entity {
         alienA.x -= 30;
         alienA.y -= 30;
         lives--;
+        fill(209, 38, 38);
+        rect(0, 0, width, height);
         if (lives == 0) {
            exit();
         }
@@ -465,9 +493,6 @@ class Alien extends Player {
     x += (v.x) * 2;
     y += (v.y) * 2;
   }
-  
-  
-
   
 }
 
