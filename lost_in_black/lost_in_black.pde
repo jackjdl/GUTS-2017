@@ -5,7 +5,9 @@ Entity door;
 Alien alienA;
 Light flashlight;
 PImage bg;
-PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal;
+PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, laserImage;
+
+ArrayList<Laser> lasers = new ArrayList<Laser>();
 
 int VP = 725;
 int HP = 1080;
@@ -21,6 +23,8 @@ void setup(){
   frameRate(60);
   cursor(CROSS);
   
+  laserImage = loadImage("../assets/Objects/Laser2.png");
+
   
   //Agent A - Ground
   int agentAx = 600;
@@ -181,7 +185,12 @@ void draw(){
     alienA.detectCollision();
   }
   
-
+  for (Laser laser: lasers) {
+  
+    laser.move();
+    laser.display();
+    laser.detectCollision();
+  }
 }
 
 void keyPressed() {
@@ -280,15 +289,18 @@ class Turret extends Entity {
  PVector location;
  boolean isFiring;
  int bullets;
+ PVector facingDirection;
  
  Turret(int xx, int yy, PImage i) {
    super(xx, yy, i);
    location = new PVector(x, y);
    bullets = 15;
+   facingDirection = new PVector(1,0);
+
  }
  
- void turn() {
-    //TODO
+ void rotate() {
+     facingDirection.set(mouseX - x, mouseY - y);
  }
  
  void display() {
@@ -300,11 +312,9 @@ class Turret extends Entity {
  
  void fire() {
    if (bullets > 0) {
+     rotate();
      img = turretFire;
-     //TODO handle fire
-     if ((mouseY > alienA.y) && (mouseY < alienA.y + alienA.img.height) && (mouseX > alienA.x) && (mouseX < alienA.x + alienA.img.width)) {
-       killedAliens = true;
-     }
+     lasers.add(new Laser(x + 40, y + 25, facingDirection));
    }
    bullets--;
  }
@@ -456,4 +466,40 @@ class Alien extends Player {
     y += (v.y) * 2;
   }
   
+  
+
+  
+}
+
+class Laser extends Entity {  
+  
+  PVector facingDirection;
+  
+  public Laser(int xx, int yy, PVector facingDirection) {
+      super(xx, yy, laserImage);
+      this.facingDirection = facingDirection;
+  }
+      
+  void move() {
+    PVector v = new PVector(facingDirection.x/facingDirection.mag(), facingDirection.y/facingDirection.mag());
+    
+    
+    x += (v.x) * 50;
+    y += (v.y) * 50;
+    System.out.println("x:" + facingDirection.x);
+    System.out.println("y:" + facingDirection.y);
+
+  }
+  
+  void detectCollision() {
+    if (alienA != null) {
+      if ((y > alienA.y) && (y < alienA.y + alienA.img.height) && (x > alienA.x) && (x < alienA.x + alienA.img.width)) {
+      
+          alienA = new Alien(170 + (int)Math.round(random(HP - 200)), (int)Math.round(random(VP)), 24, 4, alienADown);
+
+      
+      }
+    }
+    
+  }
 }
