@@ -7,8 +7,9 @@ Light flashlight;
 Entity scroll;
 PImage bg;
 PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, instructionsMovement, instructionsLight, laserImage, doorOpen, doorClosed, scrollImage;
-
 ArrayList<Laser> lasers = new ArrayList<Laser>();
+
+String[] codes = {"1234", "2345", "1413", "1998", "5677", "3267", "1434", "4565", "2017"};
 
 int VP = 725;
 int HP = 1080;
@@ -181,7 +182,10 @@ void draw(){
   }
   
   door.display();
-  scroll.display();
+  
+  if (!doorOpened) {
+      scroll.display();
+  }
   
   if (!pickedUpLight) {
     agentA.display();
@@ -230,6 +234,12 @@ void draw(){
   if (currentRoom > 0) {
     textSize(32);
     text("Room " + currentRoom, HP - 150, 30); 
+    fill(#006699);
+  }
+  
+  if (doorOpened) {
+    textSize(16);
+    text("Door unlock code: " + codes[(currentRoom % codes.length)], HP - 200, 50); 
     fill(#006699);
   }
   
@@ -383,6 +393,7 @@ class Player extends Entity {
   float bearing;
   PVector facingDirection;
   int lives;
+  int framesSinceLastWound;
  
   Player(int xx, int yy, int dd, int vv, PImage i) {
     super(xx, yy, i);
@@ -392,6 +403,7 @@ class Player extends Entity {
     rotationSpeed = 5;
     bearing = 0;
     facingDirection = new PVector(1,-3);
+    framesSinceLastWound = 0;
   }
  
  void rotate() {
@@ -400,6 +412,7 @@ class Player extends Entity {
  }
  
   void move() {
+    framesSinceLastWound++;
     int r = d>>1;
     x = constrain(x + v*(int(isRight) - int(isLeft)), r, width  - r);
     y = constrain(y + v*(int(isDown)  - int(isUp)),   r, height - r);
@@ -469,7 +482,8 @@ class Player extends Entity {
     
     //Collision with Alien
     if (alienA != null) {
-      if (collides(this, alienA)) {
+      if (collides(this, alienA) && framesSinceLastWound > 30) {
+        framesSinceLastWound = 0;
         alienA.x -= 30;
         alienA.y -= 30;
         lives--;
