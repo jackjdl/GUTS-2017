@@ -5,18 +5,22 @@ Entity door;
 Alien alienA;
 Light flashlight;
 PImage bg;
-PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, instructionsMovement, instructionsLight, laserImage;
+PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, instructionsMovement, instructionsLight, laserImage, doorOpen, doorClosed, scrollImage;
 
 ArrayList<Laser> lasers = new ArrayList<Laser>();
 
 int VP = 725;
 int HP = 1080;
 
+int currentRoom = 0;
+int alienSpeed = 2;
+
 boolean tutorial = true;
 boolean tutorialDone = false;
 boolean pickedUpLight = false;
 boolean movedLight = false;
 boolean killedAliens = false;
+boolean doorOpened = true;
 
 void setup(){
   size(1080,720);
@@ -100,9 +104,12 @@ void setup2() {
   frameRate(60);
   cursor(CROSS);
   
+  alienSpeed = currentRoom + 1;
+  //doorOpened = false;
+  
   //Agent A - Ground
   int agentAx = 600;
-  int agentAy = 92;
+  int agentAy = 10;
   agentADown = loadImage("../assets/Agent-A/Agent-A-Down.png");
   agentAUp = loadImage("../assets/Agent-A/Agent-A-Up.png");
   agentALeft = loadImage("../assets/Agent-A/Agent-A-Left.png");
@@ -134,14 +141,11 @@ void setup2() {
   doorNormal = loadImage("../assets/Objects/Door-Normal.png");
   door = new Entity(doorx, doory, doorNormal);
   
-  
   //Alien
-  int alienAx = 200;
-  int alienAy = 150;
   alienADown = loadImage("../assets/Aliens/Alien-B.png");
   alienADown.resize(alienADown.width/2, alienADown.height/2);
-  alienA = new Alien(alienAx, alienAy, 24, 4, alienADown);
-  
+  alienA = new Alien(170 + (int)Math.round(random(HP - 200)), (int)Math.round(random(VP)), 24, 4, alienADown);
+
   //Background
   bg = loadImage("../assets/Map/Room.png");
   background(bg);
@@ -207,6 +211,15 @@ void draw(){
     laser.display();
     laser.detectCollision();
   }
+  
+    
+  //Round Number
+  if (currentRoom > 0) {
+    textSize(32);
+    text("Room " + currentRoom, HP - 150, 30); 
+    fill(#006699);
+  }
+  
   
 
 }
@@ -423,9 +436,12 @@ class Player extends Entity {
   void detectCollision() {
     
     //Collision with door
-    if (y > 680 && x > 500 && x < 630) {
+    if (y > 680 && x > 500 && x < 630 && doorOpened) {
         tutorial = false;
         movedLight = true;
+        currentRoom++;
+        setup2();
+        return;
     }
     
     //Collision with flashlight
@@ -490,8 +506,8 @@ class Alien extends Player {
     rotate();
     PVector v = new PVector(facingDirection.x, facingDirection.y);
     v.div(v.mag());
-    x += (v.x) * 2;
-    y += (v.y) * 2;
+    x += (v.x) * alienSpeed;
+    y += (v.y) * alienSpeed;
   }
   
 }
