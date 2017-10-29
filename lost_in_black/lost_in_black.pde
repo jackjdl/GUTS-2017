@@ -22,7 +22,7 @@ void setup(){
   size(1080,720);
   smooth(4);
   frameRate(60);
-  cursor(ARROW);
+  cursor(CROSS);
   
   
   //Agent A - Ground
@@ -49,8 +49,8 @@ void setup(){
   
   
   //Turret
-  int turretx = 90;
-  int turrety = 310;
+  int turretx = 40;
+  int turrety = 280;
   turretNormal = loadImage("../assets/Objects/Turret-Normal.png");
   turretFire = loadImage("../assets/Objects/Turret-Fire.png");
   turret = new Turret(turretx, turrety, turretNormal);
@@ -122,8 +122,8 @@ void setup2() {
   agentB = new Entity(agentBx, agentBy, agentBRight);
   
   //Turret
-  int turretx = 90;
-  int turrety = 310;
+  int turretx = 40;
+  int turrety = 280;
   turretNormal = loadImage("../assets/Objects/Turret-Normal.png");
   turretFire = loadImage("../assets/Objects/Turret-Fire.png");
   turret = new Turret(turretx, turrety, turretNormal);
@@ -314,7 +314,7 @@ class Turret extends Entity {
    super(xx, yy, i);
    location = new PVector(x, y);
    bullets = 15;
-   facingDirection = new PVector(1,0);
+   facingDirection = new PVector(12,0);
 
  }
  
@@ -333,7 +333,7 @@ class Turret extends Entity {
    if (bullets > 0) {
      rotate();
      img = turretFire;
-     lasers.add(new Laser(x + 40, y + 25, facingDirection));
+     lasers.add(new Laser((x + 90) + 40, (y + 50) + 25, facingDirection));
    }
    bullets--;
  }
@@ -489,7 +489,7 @@ class Alien extends Player {
   void move() {
     rotate();
     PVector v = new PVector(facingDirection.x, facingDirection.y);
-    System.out.println(v.div(v.mag()));
+    v.div(v.mag());
     x += (v.x) * 2;
     y += (v.y) * 2;
   }
