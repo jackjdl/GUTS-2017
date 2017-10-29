@@ -332,7 +332,7 @@ class Turret extends Entity {
  }
  
  void rotate() {
-     facingDirection.set(mouseX - x, mouseY - y);
+     facingDirection.set(mouseX - (x+130), mouseY - (y+75));
  }
  
  void display() {
@@ -346,7 +346,7 @@ class Turret extends Entity {
    if (bullets > 0) {
      rotate();
      img = turretFire;
-     lasers.add(new Laser((x + 90) + 40, (y + 50) + 25, facingDirection));
+     lasers.add(new Laser((x + 130), (y + 75), facingDirection));
    }
    bullets--;
  }
@@ -522,11 +522,11 @@ class Laser extends Entity {
   }
       
   void move() {
-    PVector v = new PVector(facingDirection.x/facingDirection.mag(), facingDirection.y/facingDirection.mag());
+    PVector v = new PVector(facingDirection.x, facingDirection.y);
     
     
-    x += (v.x) * 50;
-    y += (v.y) * 50;
+    x += (v.x)/v.mag() * 50;
+    y += (v.y)/v.mag() * 50;
     System.out.println("x:" + facingDirection.x);
     System.out.println("y:" + facingDirection.y);
 
