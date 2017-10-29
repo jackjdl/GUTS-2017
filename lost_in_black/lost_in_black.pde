@@ -4,6 +4,7 @@ Turret turret;
 Entity door;
 Alien alienA;
 Light flashlight;
+Entity scroll;
 PImage bg;
 PImage agentADown, agentAUp, agentALeft, agentARight, agentBRight, turretNormal, turretFire, doorNormal, alienADown, flashlightNormal, heartNormal, bulletNormal, instructionsMovement, instructionsLight, laserImage, doorOpen, doorClosed, scrollImage;
 
@@ -20,7 +21,7 @@ boolean tutorialDone = false;
 boolean pickedUpLight = false;
 boolean movedLight = false;
 boolean killedAliens = false;
-boolean doorOpened = true;
+boolean doorOpened = false;
 
 void setup(){
   size(1080,720);
@@ -63,7 +64,8 @@ void setup(){
   //Door
   int doorx = width / 2 + 30;
   int doory = height - 20;
-  doorNormal = loadImage("../assets/Objects/Door-Normal.png");
+  doorNormal = loadImage("../assets/Objects/Door-Close.png");
+  doorOpen = loadImage("../assets/Objects/Door-Open.png");
   door = new Entity(doorx, doory, doorNormal);
   
   
@@ -89,8 +91,15 @@ void setup(){
   instructionsMovement = loadImage("../assets/Map/Instructions-Movement.png");
   instructionsLight = loadImage("../assets/Map/Instructions-Light.png");
   
+  
   //Laser
   laserImage = loadImage("../assets/Objects/Laser2.png");
+  
+  
+  //Scroll
+  scrollImage = loadImage("../assets/Objects/Note.png");
+  scrollImage.resize(scrollImage.width/6, scrollImage.height/6);
+  scroll = new Entity(900, 100, scrollImage);
   
   
   //Background
@@ -138,13 +147,16 @@ void setup2() {
   //Door
   int doorx = width / 2 + 30;
   int doory = height - 20;
-  doorNormal = loadImage("../assets/Objects/Door-Normal.png");
+  doorNormal = loadImage("../assets/Objects/Door-Close.png");
   door = new Entity(doorx, doory, doorNormal);
   
   //Alien
   alienADown = loadImage("../assets/Aliens/Alien-B.png");
   alienADown.resize(alienADown.width/2, alienADown.height/2);
   alienA = new Alien(170 + (int)Math.round(random(HP - 200)), (int)Math.round(random(VP)), 24, 4, alienADown);
+  
+  //Scroll
+  scroll = new Entity(170 + (int)Math.round(random(HP - 200)), (int)Math.round(random(VP - 50)), scrollImage);
 
   //Background
   bg = loadImage("../assets/Map/Room.png");
@@ -169,6 +181,7 @@ void draw(){
   }
   
   door.display();
+  scroll.display();
   
   if (!pickedUpLight) {
     agentA.display();
@@ -287,6 +300,10 @@ void paintScreenBlack() {
         }
      }
   }
+}
+
+boolean collides(Entity a, Entity b) {
+  return ((a.y > b.y) && (a.y < b.y + b.img.height) && (a.x > b.x) && (a.x < b.x + b.img.width));
 }
 
 
@@ -436,22 +453,23 @@ class Player extends Entity {
   void detectCollision() {
     
     //Collision with door
-    if (y > 680 && x > 500 && x < 630 && doorOpened) {
+    if ((x > 540 && x < 640 && y > height - 40 && y < height) && doorOpened) {
         tutorial = false;
         movedLight = true;
         currentRoom++;
+        doorOpened = false;
         setup2();
         return;
     }
     
     //Collision with flashlight
-    if (y > 500 && y < 500 + flashlight.img.height && x > 350 && x < 400 + flashlight.img.width) {
+    if (collides(this, flashlight)) {
       pickedUpLight = true;
     }
     
     //Collision with Alien
     if (alienA != null) {
-      if ((y > alienA.y) && (y < alienA.y + alienA.img.height) && (x > alienA.x) && (x < alienA.x + alienA.img.width)) {
+      if (collides(this, alienA)) {
         alienA.x -= 30;
         alienA.y -= 30;
         lives--;
@@ -461,6 +479,12 @@ class Player extends Entity {
            exit();
         }
       }
+    }
+    
+    //Collision with Scroll
+    if (collides(this, scroll)) {
+      doorOpened = true;
+      door.img = doorOpen;
     }
     
     //Collision with walls
